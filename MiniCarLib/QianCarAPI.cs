@@ -1,5 +1,6 @@
 ﻿
 using MiniCarLib.Core;
+using System.Net;
 
 namespace MiniCarLib
 {
@@ -10,6 +11,7 @@ namespace MiniCarLib
     public delegate void OnApplyForLeaveHandler(QianCar car, QianMapPoint point);
     public delegate void OnCarLeaveConfirmedHandler(QianCar car);
     public delegate void OnCarUnregisterHandler(QianCar car);
+    public delegate void OnCarErrorReportedHandler(QianCar car, CarErrorState errcode, byte[] errinfo);
     public static class QianCarAPI
     {
         static QianCarController controller;
@@ -26,6 +28,7 @@ namespace MiniCarLib
         public static event OnCarLeaveConfirmedHandler OnCarLeft;
         public static event OnCarUnregisterHandler OnCarUnregisterRequest;
         public static event OnCarUnregisterHandler OnCarUnregisterResponse;
+        public static event OnCarErrorReportedHandler OnCarErrorReported;
 
         private static void InitEvents()
         {
@@ -47,13 +50,32 @@ namespace MiniCarLib
             controller.OnCarLeaveConfirm += (car, data) => OnCarLeft?.Invoke((QianCar)car);
             controller.OnUnregisterRequest += (car, data) => OnCarUnregisterRequest?.Invoke((QianCar)car);
             controller.OnUnregisterResponse += (car, data) => OnCarUnregisterResponse?.Invoke((QianCar)car);
+            controller.OnErrorReport += (car, data) =>
+            {
+                var obj = (ErrorReportData)data;
+                OnCarErrorReported?.Invoke((QianCar)car, obj.ErrorCode, obj.ErrorData);
+            };
         }
+
+
 
         public static void Init(ushort serverID,ushort regport,ushort dataport, string mapfile, byte[] password = null)
         {
             if (!_inited)
             {
                 controller = new QianCarController(serverID, regport, dataport);
+                controller.SetMap(mapfile);
+                if (password != null)
+                    controller.PassWord = password;
+
+                InitEvents();
+            }
+        }
+        public static void Init(ushort serverID,IPAddress serverip, ushort regport, ushort dataport, string mapfile, byte[] password = null)
+        {
+            if (!_inited)
+            {
+                controller = new QianCarController(serverID, serverip, regport, dataport);
                 controller.SetMap(mapfile);
                 if (password != null)
                     controller.PassWord = password;
@@ -85,5 +107,6 @@ namespace MiniCarLib
         public static void CallCarLeave(QianCar car, bool allow) => controller.CallCarLeave(car, allow);
         public static void UnregisterCar(QianCar car) => controller.UnregisterCar(car);
         public static void ConfirmUnregteration(QianCar car, bool allow, bool removecar = true) => controller.ConfirmUnregteration(car, allow, removecar);
+        public static void EmergencyStopCar(QianCar car) => controller.EmergencyStopCar(car, 0x00);
     }
 }

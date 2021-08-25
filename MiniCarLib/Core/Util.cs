@@ -12,28 +12,39 @@ namespace MiniCarLib.Core
 {
     public static class Util
     {
-        public static Tuple<string,IPAddress>[] GetAllNetInterfaceV4()
+        public static NetWorkInterfaceInfo[] GetAvalibleNetInterfaceV4()
         {
-            List<Tuple<string, IPAddress>> rst = new List<Tuple<string, IPAddress>>();
-            rst.Add(new Tuple<string,IPAddress>("Any", IPAddress.Any));
+            List<NetWorkInterfaceInfo> rst = new List<NetWorkInterfaceInfo>();
+            rst.Add(new NetWorkInterfaceInfo()
+            {
+                InterfaceID = "Any",
+                InterfaceName = "Any",
+                IP = IPAddress.Any,
+                Mask = IPAddress.Any
+            }) ;
             var all = NetworkInterface.GetAllNetworkInterfaces();
             foreach(var it in all)
             {
                 if (it.OperationalStatus == OperationalStatus.Up)
                 {
                     var addrs = it.GetIPProperties().UnicastAddresses;
-                    IPAddress a = IPAddress.Any;
+                    //IPAddress a = IPAddress.Any;
                     foreach(var addr in addrs)
                     {
                         if(addr.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                         {
-                            a = addr.Address;
+                            rst.Add(new NetWorkInterfaceInfo()
+                            {
+                                InterfaceID = it.Id,
+                                InterfaceName = it.Name,
+                                IP = addr.Address,
+                                Mask = addr.IPv4Mask
+                            }) ;
                         }
                     }
-                    rst.Add(new Tuple<string, IPAddress>(it.Name,a));
+                    
                 }    
             }
-
             return rst.ToArray();
         }
 
@@ -71,9 +82,69 @@ namespace MiniCarLib.Core
             lo = (byte)(hword & 0xFF);
         }
 
+        public static IPAddress GetLocalIpInSameSubnet(IPAddress ip)
+        {
+            var all = GetAvalibleNetInterfaceV4();
+            foreach(var a in all)
+            {
+                if (ip.IsInSameSubnet(a.IP, a.Mask))
+                    return a.IP;
+            }
+            return IPAddress.Any;
+        }
+
         public static string SourceCodeURL => "https://www.google.com";
         public static string AuthorBlogURL => "https://blog.jloli.cc";
     }
 
-  
+    public static class IPAddressExtensions
+    {
+        public static IPAddress GetBroadcastAddress(this IPAddress address, IPAddress subnetMask)
+        {
+            byte[] ipAdressBytes = address.GetAddressBytes();
+            byte[] subnetMaskBytes = subnetMask.GetAddressBytes();
+
+            if (ipAdressBytes.Length != subnetMaskBytes.Length)
+                throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+
+            byte[] broadcastAddress = new byte[ipAdressBytes.Length];
+            for (int i = 0; i < broadcastAddress.Length; i++)
+            {
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
+            }
+            return new IPAddress(broadcastAddress);
+        }
+
+        public static IPAddress GetNetworkAddress(this IPAddress address, IPAddress subnetMask)
+        {
+            byte[] ipAdressBytes = address.GetAddressBytes();
+            byte[] subnetMaskBytes = subnetMask.GetAddressBytes();
+
+            if (ipAdressBytes.Length != subnetMaskBytes.Length)
+                throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+
+            byte[] broadcastAddress = new byte[ipAdressBytes.Length];
+            for (int i = 0; i < broadcastAddress.Length; i++)
+            {
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] & (subnetMaskBytes[i]));
+            }
+            return new IPAddress(broadcastAddress);
+        }
+
+        public static bool IsInSameSubnet(this IPAddress address2, IPAddress address, IPAddress subnetMask)
+        {
+            IPAddress network1 = address.GetNetworkAddress(subnetMask);
+            IPAddress network2 = address2.GetNetworkAddress(subnetMask);
+
+            return network1.Equals(network2);
+        }
+    }
+
+    public class NetWorkInterfaceInfo
+    {
+        public string InterfaceID { get; set; }
+        public string InterfaceName { get; set; }
+        public IPAddress IP { get; set; }
+        public IPAddress Mask { get; set; }
+    }
 }

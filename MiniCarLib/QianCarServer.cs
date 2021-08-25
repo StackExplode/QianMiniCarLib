@@ -15,6 +15,8 @@ namespace MiniCarLib
         UDPDriver udpserver = new UDPDriver();
         TCPDriver tcpserver = new TCPDriver();
         public ushort ServerID { get; }
+        public UDPDriver RegServer => udpserver;
+        public TCPDriver DataServer => tcpserver;
 
         public event OnCarDataRecDlg OnCarDataReceived;
 

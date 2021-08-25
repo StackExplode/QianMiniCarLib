@@ -26,6 +26,8 @@ namespace MiniCarLib.Core
                 case DataFunctionType.UnregisterRequest:return new UnregisterRequestData();
                 case DataFunctionType.UnregisterResponse:return new UnregisterResponseData();
                 case DataFunctionType.CustomData:return new CustomData();
+                case DataFunctionType.EmergencyStop:return new EmergencyStopData();
+                case DataFunctionType.ErrorReport:return new ErrorReportData();
                 default:return null;
             }
         }

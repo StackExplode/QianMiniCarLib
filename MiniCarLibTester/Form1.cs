@@ -56,11 +56,11 @@ namespace MiniCarLibTester
 
         private void button4_Click(object sender, EventArgs e)
         {
-            var list = Util.GetAllNetInterfaceV4();
+            var list = Util.GetAvalibleNetInterfaceV4();
             textBox1.Text = "";
             foreach(var x in list)
             {
-                textBox1.Text += x.Item1 + ":" + x.Item2.ToString();
+                textBox1.Text += x.InterfaceName + ":" + x.IP.ToString();
                 textBox1.Text += Environment.NewLine;
             }
         }

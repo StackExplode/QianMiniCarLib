@@ -23,6 +23,7 @@ namespace MiniCarLib
         public Func<CarType,ICar> CreateCarFunc { get; set; } = CarFactory.CreateInstance;
         public Func<RegisterRequestData, bool> CheckRegisteration { get; set; }
 
+
         public event OnCarEventHandler BeforeRegistering;
         public event OnCarEventHandler AfterRegistered;
         public event OnCarEventHandler BeforeReportState;
@@ -35,6 +36,7 @@ namespace MiniCarLib
         public event OnCarEventHandler OnCarLeaveConfirm;
         public event OnCarEventHandler OnUnregisterRequest;
         public event OnCarEventHandler OnUnregisterResponse;
+        public event OnCarEventHandler OnErrorReport;
         public event OnCustomDataEventHandler OnCustomData;
 
         protected void _init(ushort serverid)
@@ -54,6 +56,15 @@ namespace MiniCarLib
             _init(serverid);
             Server.InitRegServer(IPAddress.Any, regport);
             Server.InitDataServer(IPAddress.Any, dataport);
+            
+        }
+
+        public QianCarController(ushort serverid, IPAddress serverip, ushort regport, ushort dataport)
+        {
+            _init(serverid);
+            Server.InitRegServer(serverip, regport);
+            Server.InitDataServer(serverip, dataport);
+
         }
 
         public void StartServer()
@@ -83,6 +94,11 @@ namespace MiniCarLib
             RegisterResponseData res = (RegisterResponseData)QianComDataFactory.CreateInstance(DataFunctionType.RegisterResponse);
             res.AllowRegister = conf;
             res.AllocatedID = id;
+            if (Server.DataServer.ListenIP != IPAddress.Any)
+                res.ServerIP = Server.DataServer.ListenIP;
+            else
+                res.ServerIP = Util.GetLocalIpInSameSubnet(((CarUDPClient)car.ComClient).Client.Address);
+            res.ServerPort = Server.DataServer.ListenPort;
             SendCarDataPack(car, res);
         }
 
@@ -137,6 +153,14 @@ namespace MiniCarLib
             SendCarDataPack(car, res);
         }
 
+        public virtual void EmergencyStopCar(QianCar car,byte code)
+        {
+            var data = (EmergencyStopData)QianComDataFactory.CreateInstance(DataFunctionType.EmergencyStop);
+            data.EmergencyCode = code;
+            car.State = CarState.EmergencyStop;
+            SendCarDataPack(car, data);
+        }
+
         protected virtual void Server_OnCarDataReceived(IComClient client, QianComHeader header, QianComData data)
         {
             if(header.FuncType == DataFunctionType.RegisterRequest)
@@ -181,10 +205,21 @@ namespace MiniCarLib
                     OnUnregisterResponse?.Invoke(car, data);
                     UnregisterResponseHandler(car, (UnregisterResponseData)data);
                     break;
+                case DataFunctionType.ErrorReport:
+                    ErrorReportHandler(car, (ErrorReportData)data);
+                    OnErrorReport?.Invoke(car, data);
+                    break;
                 default:
                     OnCustomData?.Invoke(car, header, data);
                     break;
             }
+        }
+
+        public virtual void ErrorReportHandler(QianCar car,ErrorReportData data)
+        {
+            car.State = CarState.Error;
+            car.ErrorState = data.ErrorCode;
+            car.ErrorInfo = data.ErrorData;
         }
 
         public virtual void UnregisterResponseHandler(QianCar car, UnregisterResponseData data)

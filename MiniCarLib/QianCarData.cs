@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,9 @@ namespace MiniCarLib
         WaitingInbound = 4,
         Idle = 5,
         Running = 6,
-        WaitingOutbound = 7
+        WaitingOutbound = 7,
+        EmergencyStop = 8,
+        Error = 0xFF,
     }
     
     public enum CarErrorState : byte
@@ -47,6 +50,8 @@ namespace MiniCarLib
         CarLeaveConfirm = 0x0B,
         UnregisterRequest = 0x0C,
         UnregisterResponse = 0x0D,
+        EmergencyStop = 0x0E,
+        
 
         CustomData = 0xFF,
     }
@@ -167,7 +172,10 @@ namespace MiniCarLib
 
         public ushort AllocatedID { get; set; }
 
-        public override byte DataLen => 3;
+        public IPAddress ServerIP { get; set; }
+        public ushort ServerPort { get; set; }
+
+        public override byte DataLen => 9;
 
         public override DataFunctionType FuncType => DataFunctionType.RegisterResponse;
 
@@ -176,6 +184,11 @@ namespace MiniCarLib
             ComDataWriter dw = new ComDataWriter(data, offset);
             dw.WriteBoolean(AllowRegister);
             dw.WriteHalfWord(AllocatedID);
+            if (ServerIP != null)
+                dw.WriteByteArray(ServerIP.GetAddressBytes(), 0, 4);
+            else
+                dw.SeekRelevant(4);
+            dw.WriteHalfWord(ServerPort);
         }
 
         public override void ParseByteData(byte[] data, int offset)
@@ -183,6 +196,10 @@ namespace MiniCarLib
             ComDataReader dr = new ComDataReader(data, offset);
             AllowRegister = dr.ReadBoolean();
             AllocatedID = dr.ReadHalfWord();
+            byte[] arr = new byte[4];
+            dr.ReadByteArray(arr, 0, 4);
+            ServerIP = new IPAddress(arr);
+            ServerPort = dr.ReadHalfWord();
         }
     }
 
@@ -468,6 +485,54 @@ namespace MiniCarLib
                 Array.Copy(data, offset, UserData, 0, UserData.Length);
             }
                 
+        }
+    }
+
+    public class EmergencyStopData : QianComData
+    {
+        public byte EmergencyCode { get; set; }
+        public override byte DataLen => 1;
+
+        public override DataFunctionType FuncType => DataFunctionType.EmergencyStop;
+
+        public override void FillByteData(byte[] data, int offset)
+        {
+            data[offset] = EmergencyCode;
+        }
+
+        public override void ParseByteData(byte[] data, int offset)
+        {
+            EmergencyCode = data[offset];
+        }
+    }
+
+    public class ErrorReportData : QianComData
+    {
+        public CarErrorState ErrorCode { get; set; }
+        public byte ErrorDataLen => (byte)(ErrorData?.Length ?? 0);
+
+        public byte[] ErrorData { get; set; }
+
+        public override byte DataLen => (byte)(ErrorDataLen + 2);
+
+        public override DataFunctionType FuncType => DataFunctionType.ErrorReport;
+
+        public override void FillByteData(byte[] data, int offset)
+        {
+            ComDataWriter dw = new ComDataWriter(data, offset);
+            dw.WriteEnum<CarErrorState>(ErrorCode);
+            dw.WriteByte(ErrorDataLen);
+            if (ErrorDataLen > 0)
+                dw.WriteByteArray(ErrorData, 0, ErrorDataLen);
+        }
+
+        public override void ParseByteData(byte[] data, int offset)
+        {
+            ComDataReader dr = new ComDataReader(data, offset);
+            ErrorCode = dr.ReadEnum<CarErrorState>();
+            byte len = dr.ReadByte();
+            if (len > 0)
+                dr.ReadByteArray(ErrorData = new byte[len], 0, len);
         }
     }
 

@@ -10,6 +10,10 @@ namespace MiniCarLib
 {
     public class QianMapPoint : IMapPoint<QianMapRoute>
     {
+        public QianMapPoint(string name)
+        {
+            Name = name;
+        }
         public string Name { get; set; }
 
         public Dictionary<int, QianMapRoute> Routes => _routes;
@@ -37,8 +41,16 @@ namespace MiniCarLib
 
         protected Dictionary<int, QianMapRoute> _routes = new Dictionary<int, QianMapRoute>();
 
-        public void AddRoute(int dir, string dst, int w)
+        public void AddRoute(int dir, string dst, int w,bool rewrite = false)
         {
+            if (_routes.ContainsKey(dir))
+            {
+                if (rewrite)
+                    _routes.Remove(dir);
+                else
+                    return;
+
+            }
             _routes.Add(dir, new QianMapRoute(Name, dst, w));
         }
     }

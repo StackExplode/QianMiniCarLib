@@ -13,7 +13,7 @@ namespace MiniCarLib.Core
         Dictionary<int, T> Routes { get; }
 
         T this[int index] { get; }
-        void AddRoute(int dir, string dst, int w);
+        //void AddRoute(int dir, string dst, int w, bool rewrite=false);
     }
 
 

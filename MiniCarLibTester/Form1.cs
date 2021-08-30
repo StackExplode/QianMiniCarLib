@@ -12,6 +12,8 @@ using System.Net;
 using MiniCarLib;
 using MiniCarLib.Core;
 
+using System.Text.RegularExpressions;
+
 namespace MiniCarLibTester
 {
     public partial class Form1 : Form
@@ -120,6 +122,12 @@ namespace MiniCarLibTester
             header.ParseByteData(data);
             QianComData dataobj = QianComDataFactory.CreateInstance(header.FuncType);
             dataobj.ParseByteData(data, QianComHeader.HeaderLen);
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            QianCarMap map = new QianCarMap();
+            map.ParseMapFile(@"D:\QianZong\2021Natu\小车调度\SampleMap.txt");
         }
     }
 }

@@ -47,7 +47,7 @@
     <Compile Include="Core\ComDataFactory.cs" />
     <Compile Include="Core\ComDataReader.cs" />
     <Compile Include="Core\ComDataWriter.cs" />
-    <Compile Include="GeneralCarMap.cs" />
+    <Compile Include="QianCarMap.cs" />
     <Compile Include="Core\ICar.cs" />
     <Compile Include="Core\ICarMap.cs" />
     <Compile Include="Core\IComDriver.cs" />

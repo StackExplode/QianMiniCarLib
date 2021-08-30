@@ -10,6 +10,7 @@ using MiniCarLib.Core;
 namespace MiniCarLib
 {
     public delegate void OnCarDataRecDlg(IComClient client, QianComHeader header, QianComData data);
+
     public class QianCarServer
     {
         UDPDriver udpserver = new UDPDriver();
@@ -19,6 +20,7 @@ namespace MiniCarLib
         public TCPDriver DataServer => tcpserver;
 
         public event OnCarDataRecDlg OnCarDataReceived;
+        public event OnComDataSentDlg OnCarDataSent;
 
         public QianCarServer(ushort serverid)
         {
@@ -27,6 +29,7 @@ namespace MiniCarLib
             tcpserver.OnComClientConnected += OnClientConnected;
             tcpserver.OnComClientDisconneted += OnClientDisconnected;
             tcpserver.OnComDataReceived += OnDataReceived;
+            udpserver.OnComDataSent += OnCarDataSent;
         }
 
         public void InitRegServer(IPAddress ip, ushort port)

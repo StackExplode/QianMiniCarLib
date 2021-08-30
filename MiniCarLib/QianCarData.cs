@@ -138,11 +138,12 @@ namespace MiniCarLib
     public class RegisterRequestData : QianComData
     {
         public CarType carType { get; set; } 
+        public byte CarVersion { get; set; }
         public byte TokenLen => (byte)(Token?.Length ?? 0);
         public byte[] Token { get; set; }
         public bool NeedAllocID { get; set; }
 
-        public override byte DataLen => (byte)(TokenLen + 3);
+        public override byte DataLen => (byte)(TokenLen + 4);
 
         public override DataFunctionType FuncType => DataFunctionType.RegisterRequest;
 
@@ -150,6 +151,7 @@ namespace MiniCarLib
         {
             ComDataWriter dw = new ComDataWriter(data, offset);
             dw.WriteEnum<CarType>(carType);
+            dw.WriteByte(CarVersion);
             dw.WriteByte(TokenLen);
             if (TokenLen > 0)
                 dw.WriteByteArray(Token, 0, Token.Length);
@@ -160,6 +162,7 @@ namespace MiniCarLib
         {
             ComDataReader dr = new ComDataReader(data, offset);
             carType = dr.ReadEnum<CarType>();
+            CarVersion = dr.ReadByte();
             byte len = dr.ReadByte();
             if (len > 0)
                 dr.ReadByteArray(Token = new byte[len], 0, len);
@@ -174,8 +177,9 @@ namespace MiniCarLib
 
         public IPAddress ServerIP { get; set; }
         public ushort ServerPort { get; set; }
+        public ushort ServerVersion { get; set; }
 
-        public override byte DataLen => 9;
+        public override byte DataLen => 11;
 
         public override DataFunctionType FuncType => DataFunctionType.RegisterResponse;
 
@@ -189,6 +193,7 @@ namespace MiniCarLib
             else
                 dw.SeekRelevant(4);
             dw.WriteHalfWord(ServerPort);
+            dw.WriteHalfWord(ServerVersion);
         }
 
         public override void ParseByteData(byte[] data, int offset)
@@ -200,6 +205,7 @@ namespace MiniCarLib
             dr.ReadByteArray(arr, 0, 4);
             ServerIP = new IPAddress(arr);
             ServerPort = dr.ReadHalfWord();
+            ServerVersion = dr.ReadHalfWord();
         }
     }
 

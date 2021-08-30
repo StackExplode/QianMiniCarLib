@@ -99,6 +99,9 @@ namespace MiniCarLib
             else
                 res.ServerIP = Util.GetLocalIpInSameSubnet(((CarUDPClient)car.ComClient).Client.Address);
             res.ServerPort = Server.DataServer.ListenPort;
+            int[] ver = Util.GetLibVersion();
+            int vv = ver[0] * 100 + ver[1];
+            res.ServerVersion = (ushort)vv;
             SendCarDataPack(car, res);
         }
 
@@ -166,7 +169,8 @@ namespace MiniCarLib
             if(header.FuncType == DataFunctionType.RegisterRequest)
             {
                 BeforeRegistering?.Invoke(null, data);
-                RegisrationHandler(client, header, (RegisterRequestData)data);
+                var c = RegisrationHandler(client, header, (RegisterRequestData)data);
+                AfterRegistered?.Invoke(c, data);
                 return;
             }
 
@@ -242,12 +246,13 @@ namespace MiniCarLib
             car.State = CarState.Idle;
         }
 
-
-       
-
-        public virtual void RegisrationHandler(IComClient client, QianComHeader header, RegisterRequestData data)
+        public virtual void SendCustomData(QianCar car,CustomData data)
         {
-            BeforeRegistering?.Invoke(null, data);
+            SendCarDataPack(car, data);
+        }       
+
+        public virtual ICar RegisrationHandler(IComClient client, QianComHeader header, RegisterRequestData data)
+        {
             if (CheckRegisteration(data))
             {
                 ICar car = CreateCarFunc(data.carType);
@@ -256,13 +261,16 @@ namespace MiniCarLib
                 else
                     car.ID = header.LocalAddress;
                 ((QianCar)car).State = CarState.OutSide;
+                ((QianCar)car).CarVersion = data.CarVersion;
                 AllCars.AddorAlterCar(car);
                 ConfirmRegisteration((QianCar)car, true, (ushort)car.ID);
-                AfterRegistered?.Invoke(car, data);
+                return car;
             }
             else
+            {
                 Server.SendPack(client, header.LocalAddress, new RegisterResponseData { AllowRegister = false });
-
+                return null;
+            }
         }
 
         public virtual void QueryDataHandler(QianCar car, ReportCarStateData data)

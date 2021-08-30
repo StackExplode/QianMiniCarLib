@@ -126,8 +126,8 @@ namespace MiniCarLibTester
 
         private void button9_Click(object sender, EventArgs e)
         {
-            QianCarMap map = new QianCarMap();
-            map.ParseMapFile(@"D:\QianZong\2021Natu\小车调度\SampleMap.txt");
+            var ver = Util.GetLibVersion();
+            textBox1.Text = ver[0].ToString() + "." + ver[1].ToString();
         }
     }
 }

@@ -93,6 +93,15 @@ namespace MiniCarLib.Core
             return IPAddress.Any;
         }
 
+        public static int[] GetLibVersion()
+        {
+            int[] rt = new int[2];
+            var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            rt[0] = ver.Major;
+            rt[1] = ver.Minor;
+            return rt;
+        }
+
         public static string SourceCodeURL => "https://www.google.com";
         public static string AuthorBlogURL => "https://blog.jloli.cc";
     }
@@ -138,6 +147,8 @@ namespace MiniCarLib.Core
 
             return network1.Equals(network2);
         }
+
+  
     }
 
     public class NetWorkInterfaceInfo

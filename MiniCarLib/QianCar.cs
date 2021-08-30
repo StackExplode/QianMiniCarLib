@@ -11,6 +11,7 @@ namespace MiniCarLib
     public class QianCar : ICar
     {
         public CarType carType => CarType.QianCar;
+        public byte CarVersion { get; set; }
         public string CarName { get; set; }
         public CarState State { get; set; }
         public int Speed { get; set; }

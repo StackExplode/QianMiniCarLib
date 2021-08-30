@@ -108,5 +108,7 @@ namespace MiniCarLib
         public static void UnregisterCar(QianCar car) => controller.UnregisterCar(car);
         public static void ConfirmUnregteration(QianCar car, bool allow, bool removecar = true) => controller.ConfirmUnregteration(car, allow, removecar);
         public static void EmergencyStopCar(QianCar car) => controller.EmergencyStopCar(car, 0x00);
+        public static void SendCustomData(QianCar car,byte[] data)=> controller.SendCustomData(car, new CustomData() { UserData = data });
+
     }
 }

@@ -224,6 +224,8 @@ namespace MiniCarLib
         {
             
         }
+
+        
     }
 
     public class ReportCarStateData : QianComData
@@ -354,7 +356,8 @@ namespace MiniCarLib
     {
         public byte PointIDLen => (byte)(PointID?.Length ?? 0);
         public string PointID { get; set; }
-        public override byte DataLen => (byte)(PointIDLen + 1);
+        public byte Direction { get; set; }
+        public override byte DataLen => (byte)(PointIDLen + 2);
 
         public override DataFunctionType FuncType => DataFunctionType.CarEnterConfirm;
 
@@ -364,6 +367,7 @@ namespace MiniCarLib
             dw.WriteByte(PointIDLen);
             if (PointIDLen > 0)
                 dw.WriteString(PointID, Encoding.ASCII);
+            dw.WriteByte(Direction);
         }
 
         public override void ParseByteData(byte[] data, int offset)
@@ -372,6 +376,7 @@ namespace MiniCarLib
             byte len = dr.ReadByte();
             if (len > 0)
                 PointID = dr.ReadString(len, Encoding.ASCII);
+            Direction = dr.ReadByte();
         }
     }
 

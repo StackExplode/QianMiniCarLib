@@ -243,6 +243,7 @@ namespace MiniCarLib
         public virtual void CarEnterConfirmHandler(QianCar car,CarEnterConfirmData data)
         {
             car.CurrentPoint = Map[data.PointID];
+            car.Direction = data.Direction;
             car.State = CarState.Idle;
         }
 

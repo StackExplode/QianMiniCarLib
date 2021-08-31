@@ -13,6 +13,7 @@ using MiniCarLib;
 using MiniCarLib.Core;
 
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace MiniCarLibTester
 {
@@ -128,6 +129,7 @@ namespace MiniCarLibTester
         {
             var ver = Util.GetLibVersion();
             textBox1.Text = ver[0].ToString() + "." + ver[1].ToString();
+  
         }
     }
 }

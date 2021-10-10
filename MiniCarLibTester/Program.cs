@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using MiniCarLib;
+
 namespace MiniCarLibTester
 {
     static class Program
@@ -14,11 +16,16 @@ namespace MiniCarLibTester
         [STAThread]
         static void Main()
         {
+            
+
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
           
       
         }
+
+
     }
 }

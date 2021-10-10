@@ -15,9 +15,11 @@ namespace MiniCarLib
     public static class QianCarAPI
     {
         static QianCarController controller;
-        static QianCarController Controller => controller;
+        public static QianCarController Controller => controller;
         static bool _inited = false;
         public static bool IsInited => _inited;
+        public static QianCarMap Map => controller.Map;
+        public static CarList AllCars => controller.AllCars;
 
         public static event OnCustomDataEventHandler OnCustomData;
         public static event OnCarRegisteredHandler OnCarRegistered;
@@ -33,7 +35,7 @@ namespace MiniCarLib
         private static void InitEvents()
         {
             controller.OnCustomData += OnCustomData;
-            controller.AfterRegistered += (car, data) => OnCarRegistered?.Invoke((QianCar)car);
+            controller.AfterRegistered += (car, data) => { if (car != null) OnCarRegistered?.Invoke((QianCar)car); };
             controller.AfterReportState += (car, data) => OnCarStateReported?.Invoke((QianCar)car,((ReportCarStateData)data).IsACK);
             controller.OnApplyForEnter += (car, data) => OnCarApplyForEnter?.Invoke(
                 (QianCar)car, 

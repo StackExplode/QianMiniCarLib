@@ -232,6 +232,7 @@ namespace MiniCarLib
             {
                 car.State = CarState.UnRegistered;
                 AllCars.RemoveCar(car);
+                Server.DisconnectClient(car.ComClient);
             }
         }
 
@@ -281,7 +282,8 @@ namespace MiniCarLib
             car.CurrentPoint = Map[data.PointID];
             car.Direction = data.Direction;
             car.RouteRemain = data.RouteRemain;
-           
+          
+            
         }
 
         

@@ -114,5 +114,10 @@ namespace MiniCarLib
 
             OnCarDataReceived?.Invoke(client, header, dataobj);
         }
+
+        public void DisconnectClient(IComClient client)
+        {
+            client.Disconnect();
+        }
     }
 }

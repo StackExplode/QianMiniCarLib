@@ -11,6 +11,8 @@ namespace MiniCarLib.Core
     public interface IComClient
     {
         bool IsAlive { get; set; }
+
+        void Disconnect();
     }
 
     public class CarUDPClient : IComClient
@@ -23,6 +25,11 @@ namespace MiniCarLib.Core
         public bool IsAlive { get { return true; } set { } }
 
         public IPEndPoint Client { get; }
+
+        public virtual void Disconnect()
+        {
+            //throw new NotImplementedException();
+        }
     }
 
     public class CarTCPClient : IComClient
@@ -33,6 +40,12 @@ namespace MiniCarLib.Core
         }
         public TcpClient Client { get; }
         public bool IsAlive { get ; set ; }
+
+        public void Disconnect()
+        {
+            Client.Close();
+            IsAlive = false;
+        }
         //public bool IsAlive => Client.Connected;
     }
 }

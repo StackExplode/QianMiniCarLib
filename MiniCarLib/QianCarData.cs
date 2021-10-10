@@ -29,9 +29,8 @@ namespace MiniCarLib
     public enum CarErrorState : byte
     {
         None = 0,
-        ComError = 1,
+        ComDataError = 1,
         RunError = 2,
-        ServerError = 3
     }
 
     public enum DataFunctionType : byte

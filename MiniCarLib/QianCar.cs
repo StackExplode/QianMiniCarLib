@@ -21,8 +21,8 @@ namespace MiniCarLib
 
         public int ID { get; set; }
 
-        public QianMapPoint CurrentPoint { get; set; }
-        public byte Direction { get; set; }
+        public virtual QianMapPoint CurrentPoint { get; set; }
+        public virtual byte Direction { get; set; }
 
         public ushort RouteRemain { get; set; }
     }

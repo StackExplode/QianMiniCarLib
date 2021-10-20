@@ -12,6 +12,10 @@ namespace MiniCarLib
     public delegate void OnCarLeaveConfirmedHandler(QianCar car);
     public delegate void OnCarUnregisterHandler(QianCar car);
     public delegate void OnCarErrorReportedHandler(QianCar car, CarErrorState errcode, byte[] errinfo);
+    public delegate void OnCarMotorSpeedSetHandler(QianCar car, byte speed);
+    //public delegate void OnCarPausedHandler(QianCar car);
+    public delegate void OnCarResumingHandler(QianCar car,ReportCarStateData data);
+
     public static class QianCarAPI
     {
         static QianCarController controller;
@@ -31,12 +35,25 @@ namespace MiniCarLib
         public static event OnCarUnregisterHandler OnCarUnregisterRequest;
         public static event OnCarUnregisterHandler OnCarUnregisterResponse;
         public static event OnCarErrorReportedHandler OnCarErrorReported;
+        public static event OnCarMotorSpeedSetHandler OnCarMotorSpeedSet;
+        //public static event OnCarPausedHandler OnCarPaused;
+        public static event OnCarResumingHandler OnCarResuming;
 
         private static void InitEvents()
         {
             controller.OnCustomData += OnCustomData;
             controller.AfterRegistered += (car, data) => { if (car != null) OnCarRegistered?.Invoke((QianCar)car); };
-            controller.AfterReportState += (car, data) => OnCarStateReported?.Invoke((QianCar)car,((ReportCarStateData)data).IsACK);
+            controller.AfterReportState += (car, data) =>
+            {
+                OnCarStateReported?.Invoke((QianCar)car, ((ReportCarStateData)data).IsACK);
+            };
+            controller.BeforeReportState += (car,data) =>
+             {
+                 QianCar c = (QianCar)car;
+                 ReportCarStateData dt = (ReportCarStateData)data;
+                 if (c.State == CarState.EmergencyStop && dt.State != CarState.EmergencyStop)
+                     OnCarResuming?.Invoke(c, dt);
+             };
             controller.OnApplyForEnter += (car, data) => OnCarApplyForEnter?.Invoke(
                 (QianCar)car, 
                 controller.Map[((ApplyForEnterData)data).PointID]
@@ -57,6 +74,7 @@ namespace MiniCarLib
                 var obj = (ErrorReportData)data;
                 OnCarErrorReported?.Invoke((QianCar)car, obj.ErrorCode, obj.ErrorData);
             };
+            controller.OnMotorSpeedSet += (car, data) => OnCarMotorSpeedSet((QianCar)car, ((SetMotorSpeedData)data).MotorSpeed);
         }
 
 
@@ -109,7 +127,10 @@ namespace MiniCarLib
         public static void CallCarLeave(QianCar car, bool allow) => controller.CallCarLeave(car, allow);
         public static void UnregisterCar(QianCar car) => controller.UnregisterCar(car);
         public static void ConfirmUnregteration(QianCar car, bool allow, bool removecar = true) => controller.ConfirmUnregteration(car, allow, removecar);
-        public static void EmergencyStopCar(QianCar car) => controller.EmergencyStopCar(car, 0x00);
+        //public static void EmergencyStopCar(QianCar car) => controller.EmergencyStopCar(car, 0x00);
+        public static void PauseCar(QianCar car, byte code = 0x00) => controller.EmergencyStopCar(car, true, code);
+        public static void ResumeCar(QianCar car, byte code = 0x00) => controller.EmergencyStopCar(car, false, code);
+        public static void SetMotroSpeed(QianCar car, byte speed) => controller.SetMotorSpeed(car, speed);
         public static void SendCustomData(QianCar car,byte[] data)=> controller.SendCustomData(car, new CustomData() { UserData = data });
 
     }

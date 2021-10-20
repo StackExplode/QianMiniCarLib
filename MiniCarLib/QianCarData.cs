@@ -50,7 +50,7 @@ namespace MiniCarLib
         UnregisterRequest = 0x0C,
         UnregisterResponse = 0x0D,
         EmergencyStop = 0x0E,
-        
+        SetMotorSpeed = 0x0F,
 
         CustomData = 0xFF,
     }
@@ -237,8 +237,9 @@ namespace MiniCarLib
         public string PointID { get; set; }
         public ushort Speed { get; set; }
         public ushort RouteRemain { get; set; }
+        public byte Battery { get; set; }
 
-        public override byte DataLen => (byte)(PointIDLen + 8);
+        public override byte DataLen => (byte)(PointIDLen + 9);
 
         public override DataFunctionType FuncType => DataFunctionType.ReportCarState;
 
@@ -253,6 +254,7 @@ namespace MiniCarLib
                 dw.WriteString(PointID, Encoding.ASCII);
             dw.WriteHalfWord(Speed);
             dw.WriteHalfWord(RouteRemain);
+            dw.WriteByte(Battery);
         }
 
         public override void ParseByteData(byte[] data, int offset)
@@ -265,6 +267,7 @@ namespace MiniCarLib
                 PointID = dr.ReadString(len, Encoding.ASCII);
             Speed = dr.ReadHalfWord();
             RouteRemain = dr.ReadHalfWord();
+            Battery = dr.ReadByte();
         }
     }
 
@@ -500,18 +503,21 @@ namespace MiniCarLib
 
     public class EmergencyStopData : QianComData
     {
+        public bool Flag { get; set; }
         public byte EmergencyCode { get; set; }
-        public override byte DataLen => 1;
+        public override byte DataLen => 2;
 
         public override DataFunctionType FuncType => DataFunctionType.EmergencyStop;
 
         public override void FillByteData(byte[] data, int offset)
         {
+            data[offset++] = (byte)(Flag ? 1 : 0);
             data[offset] = EmergencyCode;
         }
 
         public override void ParseByteData(byte[] data, int offset)
         {
+            Flag = data[offset++] == 0 ? false : true;
             EmergencyCode = data[offset];
         }
     }
@@ -543,6 +549,27 @@ namespace MiniCarLib
             byte len = dr.ReadByte();
             if (len > 0)
                 dr.ReadByteArray(ErrorData = new byte[len], 0, len);
+        }
+    }
+
+    public class SetMotorSpeedData : QianComData
+    {
+        public override byte DataLen => 1;
+
+        public override DataFunctionType FuncType => DataFunctionType.SetMotorSpeed;
+
+        public byte MotorSpeed { get; set; }
+
+        public override void FillByteData(byte[] data, int offset)
+        {
+            ComDataWriter dw = new ComDataWriter(data, offset);
+            dw.WriteByte(MotorSpeed);
+        }
+
+        public override void ParseByteData(byte[] data, int offset)
+        {
+            ComDataReader dr = new ComDataReader(data, offset);
+            MotorSpeed = dr.ReadByte();
         }
     }
 

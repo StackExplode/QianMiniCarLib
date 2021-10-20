@@ -14,7 +14,7 @@ namespace MiniCarLib
         public byte CarVersion { get; set; }
         public string CarName { get; set; }
         public CarState State { get; set; }
-        public int Speed { get; set; }
+        public int CarSpeed { get; set; }
         public IComClient ComClient { get; set; }
         public CarErrorState ErrorState { get; set; }
         public object ErrorInfo { get; set; }
@@ -25,5 +25,7 @@ namespace MiniCarLib
         public virtual byte Direction { get; set; }
 
         public ushort RouteRemain { get; set; }
+        public byte Battery { get; set; }
+        public byte MoterSpeed { get; set; }
     }
 }

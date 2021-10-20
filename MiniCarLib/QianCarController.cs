@@ -37,6 +37,7 @@ namespace MiniCarLib
         public event OnCarEventHandler OnUnregisterRequest;
         public event OnCarEventHandler OnUnregisterResponse;
         public event OnCarEventHandler OnErrorReport;
+        public event OnCarEventHandler OnMotorSpeedSet;
         public event OnCustomDataEventHandler OnCustomData;
 
         protected void _init(ushort serverid)
@@ -156,11 +157,19 @@ namespace MiniCarLib
             SendCarDataPack(car, res);
         }
 
-        public virtual void EmergencyStopCar(QianCar car,byte code)
+        public virtual void EmergencyStopCar(QianCar car,bool flag,byte code)
         {
             var data = (EmergencyStopData)QianComDataFactory.CreateInstance(DataFunctionType.EmergencyStop);
             data.EmergencyCode = code;
-            car.State = CarState.EmergencyStop;
+            if(flag)
+                car.State = CarState.EmergencyStop;
+            SendCarDataPack(car, data);
+        }
+
+        public virtual void SetMotorSpeed(QianCar car, byte speed)
+        {
+            var data = (SetMotorSpeedData)QianComDataFactory.CreateInstance(DataFunctionType.SetMotorSpeed);
+            data.MotorSpeed = speed;
             SendCarDataPack(car, data);
         }
 
@@ -213,10 +222,19 @@ namespace MiniCarLib
                     ErrorReportHandler(car, (ErrorReportData)data);
                     OnErrorReport?.Invoke(car, data);
                     break;
+                case DataFunctionType.SetMotorSpeed:
+                    MotorSpeedSetHandler(car, (SetMotorSpeedData)data);
+                    OnMotorSpeedSet?.Invoke(car, data);
+                    break;
                 default:
                     OnCustomData?.Invoke(car, header, data);
                     break;
             }
+        }
+
+        public virtual void MotorSpeedSetHandler(QianCar car, SetMotorSpeedData data)
+        {
+            car.MoterSpeed = data.MotorSpeed;
         }
 
         public virtual void ErrorReportHandler(QianCar car,ErrorReportData data)
@@ -277,13 +295,12 @@ namespace MiniCarLib
 
         public virtual void QueryDataHandler(QianCar car, ReportCarStateData data)
         {           
-            car.Speed = data.Speed;
+            car.CarSpeed = data.Speed;
             car.State = data.State;
             car.CurrentPoint = Map[data.PointID];
             car.Direction = data.Direction;
             car.RouteRemain = data.RouteRemain;
-          
-            
+            car.Battery = data.Battery;            
         }
 
         

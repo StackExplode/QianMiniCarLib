@@ -26,6 +26,6 @@ namespace MiniCarLib
 
         public ushort RouteRemain { get; set; }
         public byte Battery { get; set; }
-        public byte MoterSpeed { get; set; }
+        public byte MoterSpeed { get; set; } = 100;
     }
 }

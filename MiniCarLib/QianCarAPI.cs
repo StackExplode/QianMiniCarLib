@@ -85,8 +85,8 @@ namespace MiniCarLib
             {
                 controller = new QianCarController(serverID, regport, dataport);
                 controller.SetMap(mapfile);
-                if (password != null)
-                    controller.PassWord = password;
+                //if (password != null)
+                controller.PassWord = password;
 
                 InitEvents();
             }

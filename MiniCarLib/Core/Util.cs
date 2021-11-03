@@ -142,6 +142,8 @@ namespace MiniCarLib.Core
 
         public static bool IsInSameSubnet(this IPAddress address2, IPAddress address, IPAddress subnetMask)
         {
+            if (subnetMask.GetAddressBytes()[0] != 255)
+                return false;
             IPAddress network1 = address.GetNetworkAddress(subnetMask);
             IPAddress network2 = address2.GetNetworkAddress(subnetMask);
 

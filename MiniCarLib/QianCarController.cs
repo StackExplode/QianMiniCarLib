@@ -19,7 +19,7 @@ namespace MiniCarLib
         public QianCarMap Map { get; set; } = new QianCarMap();
 
         public CarList AllCars { get; } = new CarList();
-        public byte[] PassWord { get; set; } = new byte[] { 0x00 };
+        public byte[] PassWord { get; set; } = null;
         public Func<CarType,ICar> CreateCarFunc { get; set; } = CarFactory.CreateInstance;
         public Func<RegisterRequestData, bool> CheckRegisteration { get; set; }
 
@@ -44,7 +44,7 @@ namespace MiniCarLib
         {
             Server = new QianCarServer(serverid);
             Server.OnCarDataReceived += Server_OnCarDataReceived;
-            CheckRegisteration = ((data) => { return Util.CompareByteArray(data.Token, PassWord); });
+            CheckRegisteration = ((data) => { return PassWord==null?true:Util.CompareByteArray(data.Token, PassWord); });
         }
 
         public QianCarController(ushort serverid)
@@ -282,6 +282,7 @@ namespace MiniCarLib
                     car.ID = header.LocalAddress;
                 ((QianCar)car).State = CarState.OutSide;
                 ((QianCar)car).CarVersion = data.CarVersion;
+                ((QianCar)car).ComClient = client;
                 AllCars.AddorAlterCar(car);
                 ConfirmRegisteration((QianCar)car, true, (ushort)car.ID);
                 return car;

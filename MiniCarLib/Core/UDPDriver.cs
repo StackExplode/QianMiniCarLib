@@ -78,8 +78,11 @@ namespace MiniCarLib.Core
             try
             {
                 arr = _udpserver.EndReceive(ar, ref ip);
-                cl = new CarUDPClient(ip);
-                OnComDataReceived?.Invoke(cl, arr);
+                if (arr != null && arr.Length > 0)
+                {
+                    cl = new CarUDPClient(ip);
+                    OnComDataReceived?.Invoke(cl, arr);
+                }
             }
             catch(System.IO.IOException)
             {

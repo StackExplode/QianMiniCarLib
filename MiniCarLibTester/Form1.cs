@@ -14,6 +14,7 @@ using MiniCarLib.Core;
 
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace MiniCarLibTester
 {
@@ -130,6 +131,33 @@ namespace MiniCarLibTester
             var ver = Util.GetLibVersion();
             textBox1.Text = ver[0].ToString() + "." + ver[1].ToString();
   
+        }
+
+   
+    
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("Test 啊啊啊中文 にほんごテスト");
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.Init(0x01, 8881, 8882, "C:\\Map.txt");
+            QianCarAPI.StartServer();
+
+            QianCarAPI.OnCarRegistered += (car) => { 
+                Console.WriteLine($"小车{car.ID}号注册成功。"); 
+            };
+            QianCarAPI.OnCarApplyForEnter += (car,point) =>
+            {
+                Console.WriteLine($"小车{car.ID}号申请入场到{point.Name}");
+            };
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.StopServer();
         }
     }
 }

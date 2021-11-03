@@ -72,7 +72,7 @@ namespace MiniCarLib.Core
 
         public T ReadEnum<T>() where T : Enum
         {
-            return (T)(object)buffer[ptr++];
+            return (T)(object)Convert.ToInt32(buffer[ptr++]);
         }
     }
 }

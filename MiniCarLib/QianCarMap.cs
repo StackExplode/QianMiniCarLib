@@ -30,6 +30,8 @@ namespace MiniCarLib
 
         public void ParseMapFile(string fname)
         {
+            if (!File.Exists(fname))
+                return;
             using (FileStream fs = new FileStream(fname, FileMode.Open))
             {
                 using(StreamReader sr = new StreamReader(fs))

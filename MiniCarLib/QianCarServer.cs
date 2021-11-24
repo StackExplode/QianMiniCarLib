@@ -10,6 +10,8 @@ using MiniCarLib.Core;
 namespace MiniCarLib
 {
     public delegate void OnCarDataRecDlg(IComClient client, QianComHeader header, QianComData data);
+    public delegate void OnCarConnectedDlg(IComClient client);
+    public delegate void OnCarDisConnectedDlg(IComClient client);
 
     public class QianCarServer
     {
@@ -21,6 +23,7 @@ namespace MiniCarLib
 
         public event OnCarDataRecDlg OnCarDataReceived;
         public event OnComDataSentDlg OnCarDataSent;
+        public event OnCarConnectedDlg OnCarConnected;
 
         public QianCarServer(ushort serverid)
         {
@@ -97,6 +100,7 @@ namespace MiniCarLib
         protected virtual void OnClientConnected(IComClient client)
         {
             client.IsAlive = true;
+            OnCarConnected?.Invoke(client);
         }
 
         protected virtual void OnRegDataReceived(IComClient client, byte[] data)

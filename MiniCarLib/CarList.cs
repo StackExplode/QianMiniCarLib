@@ -11,7 +11,7 @@ namespace MiniCarLib
 {
     public class CarList
     {
-        Dictionary<int,ICar> Cars { get; } = new Dictionary<int, ICar>();
+        public Dictionary<int,ICar> Cars { get; } = new Dictionary<int, ICar>();
         object locker = new object();
 
         public bool AddCar(ICar car)

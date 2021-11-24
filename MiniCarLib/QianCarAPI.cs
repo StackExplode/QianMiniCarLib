@@ -41,7 +41,7 @@ namespace MiniCarLib
 
         private static void InitEvents()
         {
-            controller.OnCustomData += OnCustomData;
+            controller.OnCustomData += (car,head,data)=> { OnCustomData?.Invoke(car, head, data); };
             controller.AfterRegistered += (car, data) => { if (car != null) OnCarRegistered?.Invoke((QianCar)car); };
             controller.AfterReportState += (car, data) =>
             {

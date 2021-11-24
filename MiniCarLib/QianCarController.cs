@@ -44,12 +44,26 @@ namespace MiniCarLib
         {
             Server = new QianCarServer(serverid);
             Server.OnCarDataReceived += Server_OnCarDataReceived;
+            Server.OnCarConnected += Server_OnCarConnected;
             CheckRegisteration = ((data) => { return PassWord==null?true:Util.CompareByteArray(data.Token, PassWord); });
         }
 
         public QianCarController(ushort serverid)
         {
             _init(serverid);
+            
+        }
+
+        private void Server_OnCarConnected(IComClient client)
+        {
+            CarTCPClient cl = (CarTCPClient)client;
+            IPAddress addr = ((IPEndPoint)cl.Client.Client.RemoteEndPoint).Address;
+            foreach(var p in AllCars.Cars)
+            {
+                var udp = (CarUDPClient)p.Value.ComClient;
+                if (udp.Client.Address.Equals(addr))
+                    p.Value.ComClient = client;
+            }
         }
 
         public QianCarController(ushort serverid,ushort regport,ushort dataport)
@@ -161,6 +175,7 @@ namespace MiniCarLib
         {
             var data = (EmergencyStopData)QianComDataFactory.CreateInstance(DataFunctionType.EmergencyStop);
             data.EmergencyCode = code;
+            data.Flag = flag;
             if(flag)
                 car.State = CarState.EmergencyStop;
             SendCarDataPack(car, data);

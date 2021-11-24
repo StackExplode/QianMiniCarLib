@@ -28,6 +28,7 @@ namespace MiniCarLib.Core
                 case DataFunctionType.CustomData:return new CustomData();
                 case DataFunctionType.EmergencyStop:return new EmergencyStopData();
                 case DataFunctionType.ErrorReport:return new ErrorReportData();
+                case DataFunctionType.SetMotorSpeed:return new SetMotorSpeedData();
                 default:return null;
             }
         }

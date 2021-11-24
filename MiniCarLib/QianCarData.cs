@@ -248,8 +248,8 @@ namespace MiniCarLib
             ComDataWriter dw = new ComDataWriter(data, offset);
             dw.WriteBoolean(IsACK);
             dw.WriteEnum<CarState>(State);
-            dw.WriteByte(PointIDLen);
             dw.WriteByte(Direction);
+            dw.WriteByte(PointIDLen);
             if (PointIDLen > 0)
                 dw.WriteString(PointID, Encoding.ASCII);
             dw.WriteHalfWord(Speed);
@@ -262,6 +262,7 @@ namespace MiniCarLib
             ComDataReader dr = new ComDataReader(data, offset);
             IsACK = dr.ReadBoolean();
             State = dr.ReadEnum<CarState>();
+            Direction = dr.ReadByte();
             byte len = dr.ReadByte();
             if (len > 0)
                 PointID = dr.ReadString(len, Encoding.ASCII);

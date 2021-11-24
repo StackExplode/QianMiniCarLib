@@ -46,7 +46,9 @@ namespace MiniCarLib
                         {
                             line++;
                             int i_fen = s.IndexOf(";");
-                            s = s.Substring(0, i_fen).TrimStart(' ');
+                            if(i_fen >= 0)
+                                s = s.Substring(0, i_fen);
+                            s = s.TrimStart(' ');
                             int i = s.IndexOf(':');
                             if (i == -1)
                             {

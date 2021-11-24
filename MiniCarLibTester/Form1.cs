@@ -140,24 +140,75 @@ namespace MiniCarLibTester
         {
             Console.WriteLine("Test 啊啊啊中文 にほんごテスト");
         }
-
+        QianCar thiscar;
         private void button10_Click(object sender, EventArgs e)
         {
-            QianCarAPI.Init(0x01, 8881, 8882, "C:\\Map.txt");
+            QianCarAPI.Init(0x01, 8881, 8882, ".\\Map.txt");
             QianCarAPI.StartServer();
 
             QianCarAPI.OnCarRegistered += (car) => { 
-                Console.WriteLine($"小车{car.ID}号注册成功。"); 
+                Console.WriteLine($"小车{car.ID}号注册成功。");
+                thiscar = car;
             };
             QianCarAPI.OnCarApplyForEnter += (car,point) =>
             {
                 Console.WriteLine($"小车{car.ID}号申请入场到{point.Name}");
+            };
+            QianCarAPI.OnCarEntered += (car, point) => { Console.WriteLine($"小车{car.ID}号已经入场到{point.Name}"); };
+
+            QianCarAPI.OnCarStateReported += (car,ack) => {
+                Console.WriteLine($"小车{car.ID}号报告信息：状态={car.State}，当前经过={car.CurrentPoint.Name}，是否应答={ack}");
+            };
+            QianCarAPI.OnCarApplyForLeave += (car,point) => { Console.WriteLine($"小车{car.ID}号申请离场从{point.Name}"); };
+            QianCarAPI.OnCarLeft += (car) => { Console.WriteLine($"小车{car.ID}已经离场！"); };
+            QianCarAPI.OnCarErrorReported += (car,code, data) => {
+
+                Console.WriteLine($"小车{car.ID}报告错误码={code},错误描述{data}");
+            };
+            QianCarAPI.OnCustomData += (car,head ,data) => { 
+                Console.WriteLine($"小车{car.ID}报告自定义信息！"); 
             };
         }
 
         private void button11_Click(object sender, EventArgs e)
         {
             QianCarAPI.StopServer();
+        }
+
+        private void button13_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.CallCarEnter(thiscar, true, QianCarAPI.Map["B2"]);
+        }
+
+        private void button14_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.QueryCarState(thiscar);
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.SendRoutes(thiscar, false, new byte[] { 1, 2, 3, 4 });
+        }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.CallCarLeave(thiscar, true);
+        }
+
+        private void button17_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.PauseCar(thiscar, 1);
+            //QianCarAPI.ResumeCar(thiscar, 4);
+        }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.SetMotroSpeed(thiscar, 50);
+        }
+
+        private void button19_Click(object sender, EventArgs e)
+        {
+            QianCarAPI.SendCustomData(thiscar, new byte[] { 5, 6, 7, 8 });
         }
     }
 }
